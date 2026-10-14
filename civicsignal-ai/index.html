@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CivicSignal AI - Important local information, made easy for everyone</title>
+  <meta name="description" content="CivicSignal AI transforms complex public notices and government circulars into simple summaries, important dates, affected locations, and actionable citizen checklists with English and Telugu support.">
+  <meta name="keywords" content="CivicSignal AI, Public Notices, Citizen Engagement, Government Announcements, Telugu, Plain Language, Smart City">
+  <meta name="author" content="CivicSignal AI Team">
+  <meta name="theme-color" content="#2563eb">
+
+  <!-- Favicon / Brand Icon -->
+  <link rel="icon" type="image/svg+xml" href="./assets/images/logo.svg">
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- Hackathon Demonstration Header Banner -->
+  <aside class="demo-top-bar" role="complementary" aria-label="Demo Disclaimer">
+    <span class="badge-pill">College Hackathon Demo</span>
+    <span data-i18n="demoBadge">💡 Demonstration Project | Demo Data Only | Not Connected to Official Government Systems</span>
+  </aside>
+
+  <!-- Sticky Site Navigation -->
+  <header class="site-header" role="banner">
+    <div class="nav-container">
+      <a href="#feed" class="brand-link" id="brandHomeLink" aria-label="CivicSignal AI Home">
+        <img src="./assets/images/logo.svg" alt="CivicSignal AI Logo" class="brand-logo" width="42" height="42">
+        <div class="brand-text">
+          <h1>CivicSignal <span class="brand-badge">AI</span></h1>
+          <p data-i18n="tagline">Important local information, made easy for everyone.</p>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <!-- Main Navigation Links -->
+        <nav role="navigation" aria-label="Main Navigation">
+          <ul class="nav-links" id="mainNavLinks">
+            <li>
+              <button class="nav-btn active" id="navFeedBtn" data-i18n="navNotices">
+                📢 Public Notices
+              </button>
+            </li>
+            <li>
+              <a href="#how-it-works" class="nav-btn" id="navHowBtn" data-i18n="navHowItWorks">
+                💡 How It Works
+              </a>
+            </li>
+            <li>
+              <button class="nav-btn" id="navAdminBtn">
+                🛠️ <span data-i18n="navAdmin">Admin Demo</span>
+                <span class="admin-nav-badge" data-i18n="navAdminBadge">Demo</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Bilingual Language Switcher (EN <-> TE) -->
+        <div class="lang-toggle-wrap" role="group" aria-label="Language Selector">
+          <button class="lang-btn active" id="langEnBtn" data-lang="en" aria-pressed="true">English</button>
+          <button class="lang-btn" id="langTeBtn" data-lang="te" aria-pressed="false">తెలుగు</button>
+        </div>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button class="mobile-nav-toggle" id="mobileMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Citizen Feed View -->
+  <main id="mainFeedView">
+    <!-- Hero Section -->
+    <section class="hero-section" aria-labelledby="heroMainHeading">
+      <div class="hero-pill">
+        <span class="pulse-dot"></span>
+        <span>Notice-to-Action Intelligence</span>
+      </div>
+      <h1 class="hero-title" id="heroMainHeading">
+        <span class="gradient-text" data-i18n="heroHeading">Understand Government Circulars in Seconds</span>
+      </h1>
+      <p class="hero-subtitle" data-i18n="heroSubheading">
+        Important local information, made easy for everyone. Official announcements simplified into clear dates, affected localities, and practical action steps.
+      </p>
+
+      <!-- Live Search Bar -->
+      <div class="hero-search-wrap">
+        <div class="search-input-box">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input 
+            type="search" 
+            id="searchInput" 
+            class="search-input" 
+            placeholder="Search by locality, keyword, department, or notice reference..."
+            data-i18n-placeholder="searchPlaceholder"
+            aria-label="Search public notices"
+            autocomplete="off"
+          >
+          <button id="searchClearBtn" class="search-clear-btn" aria-label="Clear search input">✕</button>
+        </div>
+      </div>
+
+      <!-- Quick Summary Metrics Bar (Derived from Actual Data) -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-card">
+          <div class="stat-number" id="statTotalNotices">-</div>
+          <div class="stat-label" data-i18n="statTotalNotices">Total Notices</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statActiveAlerts">-</div>
+          <div class="stat-label" data-i18n="statActiveAlerts">Active Notices</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statUpcomingAlerts">-</div>
+          <div class="stat-label" data-i18n="statUpcomingAlerts">Upcoming Notices</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statLocations">-</div>
+          <div class="stat-label" data-i18n="statLocations">Localities Covered</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statLanguages">2</div>
+          <div class="stat-label" data-i18n="statLanguages">Languages Supported</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters & Sort Controls Bar -->
+    <section class="filter-section" aria-label="Notice Filters">
+      <div class="filter-controls-card">
+        <!-- Category Filter Pills -->
+        <div class="category-pills-row" id="categoryPillsRow" role="tablist" aria-label="Category Filters">
+          <button class="cat-pill active" data-category="all" role="tab" aria-selected="true">
+            🌐 <span data-i18n="filterAll">All Categories</span>
+          </button>
+          <button class="cat-pill" data-category="water" role="tab" aria-selected="false">
+            💧 <span data-i18n="filterWater">Water Supply</span>
+          </button>
+          <button class="cat-pill" data-category="electricity" role="tab" aria-selected="false">
+            ⚡ <span data-i18n="filterElectricity">Electricity</span>
+          </button>
+          <button class="cat-pill" data-category="health" role="tab" aria-selected="false">
+            🏥 <span data-i18n="filterHealth">Public Health</span>
+          </button>
+          <button class="cat-pill" data-category="traffic" role="tab" aria-selected="false">
+            🚗 <span data-i18n="filterTraffic">Traffic & Transit</span>
+          </button>
+          <button class="cat-pill" data-category="revenue" role="tab" aria-selected="false">
+            💰 <span data-i18n="filterRevenue">Taxes & Schemes</span>
+          </button>
+          <button class="cat-pill" data-category="sanitation" role="tab" aria-selected="false">
+            🧹 <span data-i18n="filterSanitation">Sanitation</span>
+          </button>
+        </div>
+
+        <!-- Secondary Controls: Status & Sort Dropdowns -->
+        <div class="filter-sub-row">
+          <div class="filter-selects-group">
+            <label for="statusSelect" class="sr-only" style="display:none;">Filter by Status</label>
+            <select id="statusSelect" class="custom-select" aria-label="Filter by notice status">
+              <option value="all" data-i18n="statusAll">All Statuses</option>
+              <option value="active" data-i18n="statusActive">Active</option>
+              <option value="upcoming" data-i18n="statusUpcoming">Upcoming</option>
+              <option value="completed" data-i18n="statusCompleted">Completed</option>
+            </select>
+
+            <label for="sortSelect" class="sr-only" style="display:none;">Sort notices</label>
+            <select id="sortSelect" class="custom-select" aria-label="Sort notices by date">
+              <option value="newest" data-i18n="sortNewest">Newest First</option>
+              <option value="oldest" data-i18n="sortOldest">Oldest First</option>
+            </select>
+          </div>
+
+          <div class="results-meta">
+            <span class="results-count" id="resultsCount">Showing notices...</span>
+            <button id="clearFiltersBtn" class="clear-filter-btn" data-i18n="clearFilters">Clear Filters</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Public Notices Grid -->
+    <section class="notices-container" id="feed" aria-label="Public Notices Feed">
+      <div class="notices-grid" id="noticesGrid">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- Educational "How It Works" Section -->
+    <section class="how-section" id="how-it-works" aria-labelledby="howItWorksTitle">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-pill">Civic Innovation</span>
+          <h2 class="section-title" id="howItWorksTitle">How CivicSignal AI Bridges the Gap</h2>
+          <p class="section-subtitle">
+            Transforming bureaucratic official circulars into actionable, easy-to-read knowledge for every citizen.
+          </p>
+        </div>
+
+        <div class="how-steps-grid">
+          <!-- Step 1 -->
+          <div class="step-card">
+            <div class="step-badge">1</div>
+            <h3 class="step-title" data-i18n="howStep1Title">1. Complex Official Circular</h3>
+            <p class="step-desc" data-i18n="howStep1Desc">
+              Government announcements are typically released as dense 5-10 page PDF orders with heavy administrative, technical, and legal terminology.
+            </p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step-card">
+            <div class="step-badge">2</div>
+            <h3 class="step-title" data-i18n="howStep2Title">2. Structured Civic Extraction</h3>
+            <p class="step-desc" data-i18n="howStep2Desc">
+              CivicSignal AI identifies what matters: Does this affect my ward? When does it happen? What practical steps must I take?
+            </p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-card">
+            <div class="step-badge">3</div>
+            <h3 class="step-title" data-i18n="howStep3Title">3. Bilingual Citizen Accessibility</h3>
+            <p class="step-desc" data-i18n="howStep3Desc">
+              Citizens view summaries in their preferred regional language (Telugu or English) on any mobile phone, with interactive task checklists.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Administrator Demo Console View -->
+  <section class="admin-view-section" id="adminView" aria-labelledby="adminConsoleHeading">
+    <!-- Admin Hero Banner -->
+    <div class="admin-header-card">
+      <div class="admin-title-area">
+        <h2 id="adminConsoleHeading">
+          🛠️ <span data-i18n="adminTitle">Administrator Demo Console</span>
+          <span class="admin-demo-tag">Simulation</span>
+        </h2>
+        <p data-i18n="adminSubtitle">
+          Simulate publishing, updating notice statuses, and testing citizen view updates. Changes persist in your browser localStorage.
+        </p>
+      </div>
+      <div class="admin-top-actions">
+        <button id="btnResetData" class="btn-reset-data" data-i18n="btnResetDefaultData">
+          🔄 Reset to Sample Demo Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Admin Tabs: Add Notice / Manage Notices -->
+    <div class="admin-tabs-nav" role="tablist">
+      <button class="admin-tab-btn active" id="tabAddNoticeBtn" role="tab" aria-selected="true" data-i18n="tabAddNotice">
+        ✍️ Publish New Notice
+      </button>
+      <button class="admin-tab-btn" id="tabManageNoticesBtn" role="tab" aria-selected="false" data-i18n="tabManageNotices">
+        📋 Manage Notices (<span id="manageCount">0</span>)
+      </button>
+    </div>
+
+    <!-- Tab 1: Publish New Notice Form -->
+    <div class="admin-card" id="adminAddNoticeCard">
+      <!-- AI Assist Demo Banner (Clearly Marked Simulation) -->
+      <div class="ai-helper-banner">
+        <div class="ai-helper-text">
+          <strong>⚡ Demo AI Summary Assistant — Simulated:</strong> Paste official circular text and title below, then click to generate a structured citizen summary draft.
+          <br><small style="color:#166534;">⚠️ Simulation Mode: Uses client-side rule templates without external AI APIs. Real AI extraction would require a future model integration; all drafts must be verified by department staff.</small>
+        </div>
+        <button type="button" id="btnAiAssist" class="btn-ai-assist" data-i18n="btnAutoSummarize">
+          ✨ Demo AI Summary Assistant — Simulated
+        </button>
+      </div>
+
+      <form id="addNoticeForm" novalidate>
+        <div class="form-grid-2">
+          <!-- Title EN & TE -->
+          <div class="form-group">
+            <label for="noticeTitleEn" class="form-label" data-i18n="formTitleEn">Notice Title (English) *</label>
+            <input type="text" id="noticeTitleEn" class="form-input" placeholder="e.g. 24-Hour Water Supply Interruption" required>
+            <span class="form-error" id="errTitleEn">Please enter an English title.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="noticeTitleTe" class="form-label" data-i18n="formTitleTe">Notice Title (Telugu)</label>
+            <input type="text" id="noticeTitleTe" class="form-input" placeholder="ఉదా: 24 గంటల తాగునీటి సరఫరా నిలిపివేత">
+          </div>
+
+          <!-- Category & Department -->
+          <div class="form-group">
+            <label for="noticeCategory" class="form-label" data-i18n="formCategory">Category *</label>
+            <select id="noticeCategory" class="form-select" required>
+              <option value="water">Water Supply (నీటి సరఫరా)</option>
+              <option value="electricity">Electricity (విద్యుత్ సరఫరా)</option>
+              <option value="health">Public Health (ప్రజారోగ్యం)</option>
+              <option value="traffic">Traffic & Transit (ట్రాఫిక్ & రవాణా)</option>
+              <option value="revenue">Taxes & Schemes (పన్నులు & పథకాలు)</option>
+              <option value="sanitation">Sanitation (పారిశుధ్యం)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="noticeDeptEn" class="form-label" data-i18n="formDeptEn">Issuing Department (English) *</label>
+            <input type="text" id="noticeDeptEn" class="form-input" placeholder="e.g. Municipal Water Board" required>
+            <span class="form-error" id="errDeptEn">Please enter an issuing department.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="noticeDeptTe" class="form-label" data-i18n="formDeptTe">Issuing Department (Telugu)</label>
+            <input type="text" id="noticeDeptTe" class="form-input" placeholder="ఉదా: మున్సిపల్ నీటి సరఫరా బోర్డు">
+          </div>
+
+          <!-- Dates & Timings -->
+          <div class="form-group">
+            <label for="noticeDateEn" class="form-label" data-i18n="formDateEn">Important Date / Schedule (English) *</label>
+            <input type="text" id="noticeDateEn" class="form-input" placeholder="e.g. Saturday, Oct 24, 2026" required>
+            <span class="form-error" id="errDateEn">Please enter the schedule date.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="noticeTimingEn" class="form-label" data-i18n="formTimingEn">Timing (e.g. 10:00 AM - 2:00 PM)</label>
+            <input type="text" id="noticeTimingEn" class="form-input" placeholder="e.g. 8:00 AM to 6:00 PM">
+          </div>
+
+          <!-- Locations EN & TE -->
+          <div class="form-group full-width">
+            <label for="noticeLocationsEn" class="form-label" data-i18n="formLocationsEn">Affected Locations (comma separated) *</label>
+            <input type="text" id="noticeLocationsEn" class="form-input" placeholder="e.g. Sector 4, Gandhinagar, Ward 12" required>
+            <span class="helper-text">Separate multiple areas or wards with commas. Citizens can filter notices by clicking these areas.</span>
+            <span class="form-error" id="errLocationsEn">Please provide at least one affected locality.</span>
+          </div>
+
+          <!-- Citizen Actions EN & TE -->
+          <div class="form-group full-width">
+            <label for="noticeActionsEn" class="form-label" data-i18n="formActionsEn">Required Citizen Actions (one per line or comma separated) *</label>
+            <textarea id="noticeActionsEn" class="form-textarea" placeholder="e.g. Store adequate water by Friday evening&#10;Avoid running washing machines during outage" required></textarea>
+            <span class="form-error" id="errActionsEn">Please provide at least one required action.</span>
+          </div>
+
+          <!-- Priority & Status -->
+          <div class="form-group">
+            <label for="noticePriority" class="form-label" data-i18n="formPriority">Urgency / Priority *</label>
+            <select id="noticePriority" class="form-select">
+              <option value="urgent">Urgent (అత్యవసరం)</option>
+              <option value="normal" selected>Standard (సాధారణం)</option>
+              <option value="advisory">Advisory (సమాచారార్థం)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="noticeStatus" class="form-label" data-i18n="formStatus">Notice Status *</label>
+            <select id="noticeStatus" class="form-select">
+              <option value="active" selected>Active (అమలులో ఉన్నది)</option>
+              <option value="upcoming">Upcoming (రాబోయేది)</option>
+              <option value="completed">Completed (పూర్తయినది)</option>
+            </select>
+          </div>
+
+          <!-- Original Official Text -->
+          <div class="form-group full-width">
+            <label for="noticeOriginalEn" class="form-label" data-i18n="formOriginalTextEn">Original Circular Text (English) *</label>
+            <textarea id="noticeOriginalEn" class="form-textarea" placeholder="Paste official circular or circular notification order text here..." required></textarea>
+            <span class="form-error" id="errOriginalEn">Please provide official circular text.</span>
+          </div>
+
+          <!-- Simplified Summary EN & TE -->
+          <div class="form-group full-width">
+            <label for="noticeSummaryEn" class="form-label" data-i18n="formSummaryEn">Simplified Summary (English) *</label>
+            <textarea id="noticeSummaryEn" class="form-textarea" placeholder="Simple, plain English explanation for citizens..." required></textarea>
+            <span class="form-error" id="errSummaryEn">Please provide a simple citizen summary.</span>
+          </div>
+
+          <!-- Form Submit Row -->
+          <div class="form-submit-row">
+            <button type="submit" class="btn-submit-notice" data-i18n="btnSubmitNotice">
+              📢 Publish Notice to Feed
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tab 2: Manage Notices Table -->
+    <div class="admin-card" id="adminManageNoticesCard" style="display: none;">
+      <div class="admin-table-wrap">
+        <table class="admin-table" id="adminNoticesTable">
+          <thead>
+            <tr>
+              <th data-i18n="tableRef">Ref / ID</th>
+              <th data-i18n="tableTitle">Notice Title</th>
+              <th data-i18n="tableCategory">Category</th>
+              <th data-i18n="tableStatus">Status</th>
+              <th data-i18n="tablePublished">Visibility</th>
+              <th data-i18n="tableActions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody">
+            <!-- Rendered dynamically by app.js -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Notice Details Modal Dialog -->
+  <div class="modal-overlay" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="modalNoticeTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div id="modalCategoryBadge"></div>
+        <button class="modal-close-btn" id="modalCloseBtn" aria-label="Close dialog">✕</button>
+      </div>
+
+      <div class="modal-body" id="modalContent">
+        <!-- Injected dynamically by app.js -->
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" id="modalPrintBtn" data-i18n="btnPrintNotice">
+          🖨️ Print Notice
+        </button>
+        <div class="modal-footer-btns">
+          <button class="btn-secondary" id="modalCopyBtn" data-i18n="btnCopySummary">
+            📋 Copy Summary
+          </button>
+          <button class="btn-secondary" id="modalDismissBtn" data-i18n="btnClose">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <h3>CivicSignal AI</h3>
+          <p data-i18n="tagline">
+            Important local information, made easy for everyone.
+          </p>
+          <div class="footer-disclaimer-box" data-i18n="footerDisclaimer">
+            CivicSignal AI is an academic research & hackathon prototype. All presented notices are demonstration data.
+          </div>
+        </div>
+
+        <div class="footer-links-group">
+          <div class="footer-col">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="#feed" id="footerFeedLink">Public Notices</a></li>
+              <li><a href="#how-it-works">How It Works</a></li>
+              <li><a href="#admin" id="footerAdminLink">Admin Console</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Focus Themes</h4>
+            <ul>
+              <li>Citizen Engagement</li>
+              <li>Public Services Access</li>
+              <li>Bilingual Civic Tech</li>
+              <li>Urban Governance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 CivicSignal AI • College Hackathon Edition</div>
+        <div>Built with HTML, CSS, JavaScript & localStorage • No External API Required</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Scripts -->
+  <script src="./js/demo-data.js"></script>
+  <script src="./js/notices.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
