@@ -178,11 +178,39 @@ function bindEventListeners() {
 
     // Update active pill
     DOM.categoryPillsRow.querySelectorAll('.cat-pill').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.category === cat);
-      btn.setAttribute('aria-selected', btn.dataset.category === cat);
+      const isSelected = btn.dataset.category === cat;
+      btn.classList.toggle('active', isSelected);
+      btn.setAttribute('aria-selected', isSelected ? 'true' : 'false');
     });
 
     renderNoticesFeed();
+  });
+
+  // Category Filter Pills Keyboard Navigation (WAI-ARIA Tablist Pattern)
+  DOM.categoryPillsRow.addEventListener('keydown', (e) => {
+    const pills = Array.from(DOM.categoryPillsRow.querySelectorAll('.cat-pill'));
+    const currentIdx = pills.indexOf(document.activeElement);
+    if (currentIdx === -1) return;
+
+    let targetIdx = -1;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      targetIdx = (currentIdx + 1) % pills.length;
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      targetIdx = (currentIdx - 1 + pills.length) % pills.length;
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      targetIdx = 0;
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      targetIdx = pills.length - 1;
+    }
+
+    if (targetIdx !== -1) {
+      pills[targetIdx].focus();
+      pills[targetIdx].click();
+    }
   });
 
   // Status & Sort Dropdowns
@@ -203,14 +231,42 @@ function bindEventListeners() {
   DOM.tabAddNoticeBtn.addEventListener('click', () => switchAdminTab('add'));
   DOM.tabManageNoticesBtn.addEventListener('click', () => switchAdminTab('manage'));
 
+  // Admin Tabs Keyboard Navigation (Left / Right Arrow)
+  const adminTabBtns = [DOM.tabAddNoticeBtn, DOM.tabManageNoticesBtn];
+  adminTabBtns.forEach((btn, idx) => {
+    btn.addEventListener('keydown', (e) => {
+      let targetIdx = -1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        targetIdx = (idx + 1) % adminTabBtns.length;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        targetIdx = (idx - 1 + adminTabBtns.length) % adminTabBtns.length;
+      }
+      if (targetIdx !== -1) {
+        adminTabBtns[targetIdx].focus();
+        adminTabBtns[targetIdx].click();
+      }
+    });
+  });
+
   // Reset Demo Data
   DOM.btnResetData.addEventListener('click', handleResetDemoData);
 
   // AI Assist Demo Helper (Honest Draft Generator)
   DOM.btnAiAssist.addEventListener('click', handleAiHelperClick);
 
-  // Admin Add Notice Form Submission
+  // Admin Add Notice Form Submission & Real-Time Error Clearance
   DOM.addNoticeForm.addEventListener('submit', handleAddNoticeSubmit);
+  DOM.addNoticeForm.querySelectorAll('input, select, textarea').forEach(input => {
+    const clearErr = () => {
+      input.removeAttribute('aria-invalid');
+      const errSpan = input.parentElement ? input.parentElement.querySelector('.form-error') : null;
+      if (errSpan) errSpan.style.display = 'none';
+    };
+    input.addEventListener('input', clearErr);
+    input.addEventListener('change', clearErr);
+  });
 
   // Modal Close Handlers
   DOM.modalCloseBtn.addEventListener('click', closeModal);
@@ -218,9 +274,36 @@ function bindEventListeners() {
   DOM.noticeModal.addEventListener('click', (e) => {
     if (e.target === DOM.noticeModal) closeModal();
   });
+
+  // Modal Focus Trap & Escape Key Listener (WCAG 2.1.2 & 2.4.3)
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && DOM.noticeModal.classList.contains('active')) {
-      closeModal();
+    if (DOM.noticeModal.classList.contains('active')) {
+      if (e.key === 'Escape') {
+        closeModal();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const focusableElements = DOM.noticeModal.querySelectorAll(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusableElements.length > 0) {
+          const firstEl = focusableElements[0];
+          const lastEl = focusableElements[focusableElements.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstEl || document.activeElement === DOM.noticeModal) {
+              e.preventDefault();
+              lastEl.focus();
+            }
+          } else {
+            if (document.activeElement === lastEl) {
+              e.preventDefault();
+              firstEl.focus();
+            }
+          }
+        }
+      }
     }
   });
 
@@ -239,12 +322,16 @@ function switchView(viewName) {
     DOM.mainFeedView.style.display = 'block';
     DOM.adminView.style.display = 'none';
     DOM.navFeedBtn.classList.add('active');
+    DOM.navFeedBtn.setAttribute('aria-current', 'page');
     DOM.navAdminBtn.classList.remove('active');
+    DOM.navAdminBtn.removeAttribute('aria-current');
   } else {
     DOM.mainFeedView.style.display = 'none';
     DOM.adminView.style.display = 'block';
     DOM.navFeedBtn.classList.remove('active');
+    DOM.navFeedBtn.removeAttribute('aria-current');
     DOM.navAdminBtn.classList.add('active');
+    DOM.navAdminBtn.setAttribute('aria-current', 'page');
     renderAdminTable();
   }
 }
@@ -259,12 +346,16 @@ function switchAdminTab(tab) {
     DOM.adminAddNoticeCard.style.display = 'block';
     DOM.adminManageNoticesCard.style.display = 'none';
     DOM.tabAddNoticeBtn.classList.add('active');
+    DOM.tabAddNoticeBtn.setAttribute('aria-selected', 'true');
     DOM.tabManageNoticesBtn.classList.remove('active');
+    DOM.tabManageNoticesBtn.setAttribute('aria-selected', 'false');
   } else {
     DOM.adminAddNoticeCard.style.display = 'none';
     DOM.adminManageNoticesCard.style.display = 'block';
     DOM.tabAddNoticeBtn.classList.remove('active');
+    DOM.tabAddNoticeBtn.setAttribute('aria-selected', 'false');
     DOM.tabManageNoticesBtn.classList.add('active');
+    DOM.tabManageNoticesBtn.setAttribute('aria-selected', 'true');
     renderAdminTable();
   }
 }
@@ -295,6 +386,7 @@ function setLanguage(lang) {
  * @param {'en'|'te'} lang
  */
 function applyLanguage(lang) {
+  document.documentElement.lang = lang;
   const strings = UI_TRANSLATIONS[lang] || UI_TRANSLATIONS.en;
 
   // Toggle active styling on language buttons
@@ -428,25 +520,27 @@ function renderNoticesFeed() {
     // Render interactive action items preview (first 2 items)
     const actionsPreviewHtml = actions.slice(0, 2).map((act, index) => {
       const itemKey = `${notice.id}_act_${index}`;
+      const inputId = `feed_chk_${notice.id}_${index}`;
       const isChecked = !!AppState.checklistState[itemKey];
       return `
         <li class="action-item ${isChecked ? 'completed' : ''}">
           <input 
             type="checkbox" 
+            id="${inputId}"
             class="action-checkbox" 
             data-item-key="${itemKey}" 
             ${isChecked ? 'checked' : ''}
-            aria-label="Mark action completed"
+            aria-label="Mark action completed: ${escapeHtml(act)}"
           >
-          <span>${escapeHtml(act)}</span>
+          <label for="${inputId}" class="action-label">${escapeHtml(act)}</label>
         </li>
       `;
     }).join('');
 
-    // Locations chips (clickable to filter)
+    // Locations chips (accessible buttons to filter)
     const locationsChipsHtml = locations.slice(0, 3).map(loc => 
-      `<span class="loc-chip" data-filter-loc="${escapeHtml(loc)}" title="Click to filter by ${escapeHtml(loc)}">${escapeHtml(loc)}</span>`
-    ).join('') + (locations.length > 3 ? `<span class="loc-chip" style="cursor:default;">+${locations.length - 3}</span>` : '');
+      `<button type="button" class="loc-chip" data-filter-loc="${escapeHtml(loc)}" aria-label="Filter notices by locality: ${escapeHtml(loc)}" title="Filter notices by ${escapeHtml(loc)}">${escapeHtml(loc)}</button>`
+    ).join('') + (locations.length > 3 ? `<span class="loc-chip" style="cursor:default;" aria-label="${locations.length - 3} more localities">+${locations.length - 3}</span>` : '');
 
     return `
       <article class="notice-card ${notice.priority || 'normal'}-border" data-notice-id="${notice.id}">
@@ -470,12 +564,12 @@ function renderNoticesFeed() {
           ` : ''}
 
           <!-- Title & Department -->
-          <h2 class="card-title">${escapeHtml(title)}</h2>
-          <div class="card-dept">🏛️ ${escapeHtml(dept)}</div>
+          <h3 class="card-title">${escapeHtml(title)}</h3>
+          <div class="card-dept"><span aria-hidden="true">🏛️</span> ${escapeHtml(dept)}</div>
 
           <!-- Plain-Language Summary Callout Box -->
           <div class="card-summary-box">
-            <span class="summary-label">💡 ${strings.labelSummaryHeader}</span>
+            <span class="summary-label"><span aria-hidden="true">💡</span> ${strings.labelSummaryHeader}</span>
             <p class="summary-text">${escapeHtml(summary)}</p>
           </div>
 
@@ -483,7 +577,7 @@ function renderNoticesFeed() {
           <div class="notice-intel-box">
             <!-- 1. Affected Localities -->
             <div class="intel-row">
-              <span class="intel-question-label">📍 ${strings.qLocality || 'Does this affect my locality?'}</span>
+              <span class="intel-question-label"><span aria-hidden="true">📍</span> ${strings.qLocality || 'Does this affect my locality?'}</span>
               <div class="locations-chips-wrap">
                 ${locationsChipsHtml}
               </div>
@@ -491,10 +585,10 @@ function renderNoticesFeed() {
 
             <!-- 2. When does it happen? -->
             <div class="intel-row">
-              <span class="intel-question-label">⏱️ ${strings.qWhen || 'When does it happen?'}</span>
+              <span class="intel-question-label"><span aria-hidden="true">⏱️</span> ${strings.qWhen || 'When does it happen?'}</span>
               <span class="intel-answer-text">
                 <strong>${escapeHtml(date)}</strong>
-                ${timing ? ` <br><small style="color:#64748b;">${escapeHtml(timing)}</small>` : ''}
+                ${timing ? ` <br><small style="color:var(--text-muted);">${escapeHtml(timing)}</small>` : ''}
               </span>
             </div>
           </div>
@@ -503,8 +597,8 @@ function renderNoticesFeed() {
           ${actions.length > 0 ? `
             <div class="card-actions-preview">
               <div class="actions-header">
-                <span>📋 ${strings.qWhatToDo || 'What should I do?'}</span>
-                <small style="text-transform:none; font-weight:normal; color:#64748b;">${actions.length} action items</small>
+                <span><span aria-hidden="true">📋</span> ${strings.qWhatToDo || 'What should I do?'}</span>
+                <small style="text-transform:none; font-weight:normal; color:var(--text-muted);">${actions.length} action items</small>
               </div>
               <ul class="action-checklist">
                 ${actionsPreviewHtml}
@@ -515,11 +609,11 @@ function renderNoticesFeed() {
 
         <!-- Card Footer Buttons -->
         <div class="card-footer">
-          <button class="btn-view-details" data-open-modal="${notice.id}">
-            🔍 ${strings.btnViewDetails}
+          <button type="button" class="btn-view-details" data-open-modal="${notice.id}" aria-label="${escapeHtml(strings.btnViewDetails)}: ${escapeHtml(title)}">
+            <span aria-hidden="true">🔍</span> ${escapeHtml(strings.btnViewDetails)}
           </button>
-          <button class="btn-copy-summary" data-copy-summary="${notice.id}" title="${strings.btnCopySummary}">
-            📋
+          <button type="button" class="btn-copy-summary" data-copy-summary="${notice.id}" aria-label="${escapeHtml(strings.btnCopySummary)}: ${escapeHtml(title)}" title="${escapeHtml(strings.btnCopySummary)}">
+            <span aria-hidden="true">📋</span>
           </button>
         </div>
       </article>
@@ -530,7 +624,7 @@ function renderNoticesFeed() {
   DOM.noticesGrid.querySelectorAll('[data-open-modal]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = e.currentTarget.getAttribute('data-open-modal');
-      openModal(id);
+      openModal(id, e.currentTarget);
     });
   });
 
@@ -566,14 +660,18 @@ function renderNoticesFeed() {
   });
 }
 
+let activeModalTrigger = null;
+
 /**
  * Opens detailed breakdown modal for a specific notice.
  * @param {string} noticeId
+ * @param {HTMLElement} [triggerEl]
  */
-function openModal(noticeId) {
+function openModal(noticeId, triggerEl) {
   const notice = NoticeStore.getById(noticeId);
   if (!notice) return;
 
+  activeModalTrigger = triggerEl || document.activeElement;
   AppState.activeModalNoticeId = noticeId;
   const lang = AppState.currentLang;
   const strings = UI_TRANSLATIONS[lang] || UI_TRANSLATIONS.en;
@@ -598,7 +696,7 @@ function openModal(noticeId) {
       <span class="category-tag tag-${notice.category}">${catIcon} ${catName}</span>
       <span class="priority-pill priority-${notice.priority || 'normal'}">${priorityLabel}</span>
       <span class="status-indicator status-${notice.status || 'active'}">● ${statusLabel}</span>
-      <span style="font-size:0.75rem; color:#64748b; font-family:monospace;">${escapeHtml(notice.referenceNumber || notice.id)}</span>
+      <span style="font-size:0.75rem; color:var(--text-muted); font-family:monospace;">${escapeHtml(notice.referenceNumber || notice.id)}</span>
     </div>
   `;
 
@@ -606,18 +704,21 @@ function openModal(noticeId) {
   let completedCount = 0;
   const checklistItemsHtml = actions.map((act, index) => {
     const itemKey = `${notice.id}_act_${index}`;
+    const inputId = `modal_chk_${notice.id}_${index}`;
     const isChecked = !!AppState.checklistState[itemKey];
     if (isChecked) completedCount++;
     return `
       <li class="action-item ${isChecked ? 'completed' : ''}" style="margin-bottom:0.6rem;">
         <input 
           type="checkbox" 
+          id="${inputId}"
           class="action-checkbox modal-action-box" 
           data-item-key="${itemKey}" 
           ${isChecked ? 'checked' : ''}
           style="width:18px; height:18px;"
+          aria-label="Mark action completed: ${escapeHtml(act)}"
         >
-        <span style="font-size:0.92rem;">${escapeHtml(act)}</span>
+        <label for="${inputId}" class="action-label" style="font-size:0.92rem;">${escapeHtml(act)}</label>
       </li>
     `;
   }).join('');
@@ -626,23 +727,23 @@ function openModal(noticeId) {
 
   DOM.modalContent.innerHTML = `
     ${notice.isSample !== false ? `
-      <div class="modal-sample-warning" role="alert">
+      <div class="modal-sample-warning" role="note">
         ${escapeHtml(strings.sampleModalWarning || '⚠️ DEMONSTRATION NOTICE: Fictional content for academic hackathon demonstration only. Not an official municipal circular.')}
       </div>
     ` : ''}
     <div>
       <h2 class="modal-title" id="modalNoticeTitle">${escapeHtml(title)}</h2>
       <div class="modal-meta-bar" style="margin-top:0.75rem;">
-        <span>🏛️ <strong>${strings.labelDept}:</strong> ${escapeHtml(dept)}</span>
-        <span>🗓️ <strong>${strings.labelIssued}:</strong> ${notice.issuedDate || 'Recent'}</span>
-        <span>🔖 <strong>${strings.labelRef}:</strong> ${escapeHtml(notice.referenceNumber || notice.id)}</span>
+        <span><span aria-hidden="true">🏛️</span> <strong>${strings.labelDept}:</strong> ${escapeHtml(dept)}</span>
+        <span><span aria-hidden="true">🗓️</span> <strong>${strings.labelIssued}:</strong> ${notice.issuedDate || 'Recent'}</span>
+        <span><span aria-hidden="true">🔖</span> <strong>${strings.labelRef}:</strong> ${escapeHtml(notice.referenceNumber || notice.id)}</span>
       </div>
     </div>
 
     <!-- Highlighted Simple Summary Callout -->
-    <div class="modal-summary-box">
+    <div class="modal-summary-box" id="modalSummaryBox">
       <div class="modal-summary-title">
-        <span>💡 ${strings.labelSummaryHeader}</span>
+        <span><span aria-hidden="true">💡</span> ${strings.labelSummaryHeader}</span>
       </div>
       <p class="modal-summary-content">${escapeHtml(summary)}</p>
     </div>
@@ -650,13 +751,13 @@ function openModal(noticeId) {
     <!-- Date, Time, and Locations 2-Column Grid -->
     <div class="modal-grid-info">
       <div class="info-block">
-        <div class="info-block-label">⏱️ ${strings.qWhen || strings.labelImportantDate}</div>
+        <div class="info-block-label"><span aria-hidden="true">⏱️</span> ${strings.qWhen || strings.labelImportantDate}</div>
         <div class="info-block-val">${escapeHtml(date)}</div>
-        ${timing ? `<div style="font-size:0.85rem; color:#64748b; margin-top:0.25rem;">⏰ ${escapeHtml(timing)}</div>` : ''}
+        ${timing ? `<div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;"><span aria-hidden="true">⏰</span> ${escapeHtml(timing)}</div>` : ''}
       </div>
 
       <div class="info-block">
-        <div class="info-block-label">📍 ${strings.qLocality || strings.labelAffectedLocations}</div>
+        <div class="info-block-label"><span aria-hidden="true">📍</span> ${strings.qLocality || strings.labelAffectedLocations}</div>
         <div class="locations-chips-wrap" style="margin-top:0.35rem;">
           ${locations.map(loc => `<span class="loc-chip" style="font-size:0.8rem; padding:0.2rem 0.6rem;">${escapeHtml(loc)}</span>`).join('')}
         </div>
@@ -667,15 +768,15 @@ function openModal(noticeId) {
     ${actions.length > 0 ? `
       <div class="modal-actions-block">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-          <strong style="font-size:0.95rem; color:#0f172a;">📋 ${strings.qWhatToDo || strings.labelRequiredActions}</strong>
+          <strong style="font-size:0.95rem; color:#0f172a;"><span aria-hidden="true">📋</span> ${strings.qWhatToDo || strings.labelRequiredActions}</strong>
           <span id="modalProgressLabel" style="font-size:0.82rem; font-weight:700; color:#059669;">
             ${completedCount} of ${actions.length} completed (${progressPercent}%)
           </span>
         </div>
-        <div class="actions-progress-bar">
+        <div class="actions-progress-bar" role="progressbar" aria-valuenow="${progressPercent}" aria-valuemin="0" aria-valuemax="100" aria-label="Citizen actions completed" id="modalProgressBarWrap">
           <div class="progress-fill" id="modalProgressBar" style="width: ${progressPercent}%;"></div>
         </div>
-        <div style="font-size:0.78rem; color:#64748b; margin-bottom:0.75rem;">
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.75rem;">
           ${strings.checklistHint || 'Check off items as you complete them to track readiness.'}
         </div>
         <ul class="action-checklist" id="modalActionChecklist">
@@ -686,7 +787,7 @@ function openModal(noticeId) {
 
     <!-- Notice Verification Container -->
     <div class="verification-status-banner">
-      <span style="font-size:1.1rem;">🛡️</span>
+      <span style="font-size:1.1rem;" aria-hidden="true">🛡️</span>
       <div>
         <strong>${strings.labelVerificationStatus || 'Verification Status'}:</strong>
         <span> ${strings.verificationDemoText || 'Simulated Demonstration Notice • Requires confirmation with local municipal ward office'}</span>
@@ -696,9 +797,9 @@ function openModal(noticeId) {
     <!-- Official Circular Original Text Accordion -->
     ${original ? `
       <div class="original-text-accordion">
-        <button type="button" class="accordion-toggle" id="btnToggleAccordion">
-          <span>📜 ${strings.labelOriginalExcerpt}</span>
-          <span id="accordionArrow">▼</span>
+        <button type="button" class="accordion-toggle" id="btnToggleAccordion" aria-expanded="false" aria-controls="accordionContent">
+          <span><span aria-hidden="true">📜</span> ${strings.labelOriginalExcerpt}</span>
+          <span id="accordionArrow" aria-hidden="true">▼</span>
         </button>
         <div class="accordion-content" id="accordionContent">
           ${escapeHtml(original)}
@@ -714,7 +815,8 @@ function openModal(noticeId) {
   if (accordionBtn && accordionContent) {
     accordionBtn.addEventListener('click', () => {
       const isOpen = accordionContent.classList.toggle('open');
-      accordionArrow.textContent = isOpen ? '▲' : '▼';
+      accordionBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      if (accordionArrow) accordionArrow.textContent = isOpen ? '▲' : '▼';
     });
   }
 
@@ -736,8 +838,10 @@ function openModal(noticeId) {
       const pct = Math.round((count / total) * 100);
 
       const bar = document.getElementById('modalProgressBar');
+      const wrap = document.getElementById('modalProgressBarWrap');
       const lbl = document.getElementById('modalProgressLabel');
       if (bar) bar.style.width = `${pct}%`;
+      if (wrap) wrap.setAttribute('aria-valuenow', pct);
       if (lbl) lbl.textContent = `${count} of ${total} completed (${pct}%)`;
 
       // Also update background feed cards
@@ -747,15 +851,27 @@ function openModal(noticeId) {
 
   DOM.noticeModal.classList.add('active');
   document.body.style.overflow = 'hidden';
+
+  // Move keyboard focus to close button
+  setTimeout(() => {
+    if (DOM.modalCloseBtn) {
+      DOM.modalCloseBtn.focus();
+    }
+  }, 50);
 }
 
 /**
- * Closes modal dialogue.
+ * Closes modal dialogue and restores focus to triggering button.
  */
 function closeModal() {
   DOM.noticeModal.classList.remove('active');
   AppState.activeModalNoticeId = null;
   document.body.style.overflow = '';
+
+  if (activeModalTrigger && typeof activeModalTrigger.focus === 'function') {
+    activeModalTrigger.focus();
+    activeModalTrigger = null;
+  }
 }
 
 /**
@@ -810,7 +926,7 @@ function renderAdminTable() {
           </span>
         </td>
         <td>
-          <select class="table-status-select" data-update-status="${notice.id}">
+          <select class="table-status-select" data-update-status="${notice.id}" aria-label="Update status for notice: ${escapeHtml(title)}">
             <option value="active" ${notice.status === 'active' ? 'selected' : ''}>Active</option>
             <option value="upcoming" ${notice.status === 'upcoming' ? 'selected' : ''}>Upcoming</option>
             <option value="completed" ${notice.status === 'completed' ? 'selected' : ''}>Completed</option>
@@ -818,15 +934,17 @@ function renderAdminTable() {
         </td>
         <td>
           <button 
+            type="button"
             class="table-toggle-btn ${isPublished ? 'published' : 'unpublished'}" 
             data-toggle-published="${notice.id}"
+            aria-label="Toggle publication for notice ${escapeHtml(title)}. Currently ${isPublished ? 'published' : 'draft'}"
           >
             ${isPublished ? '● Published' : '○ Draft'}
           </button>
         </td>
         <td>
-          <button class="table-delete-btn" data-delete-id="${notice.id}">
-            🗑️ ${strings.btnDelete || 'Delete'}
+          <button type="button" class="table-delete-btn" data-delete-id="${notice.id}" aria-label="${escapeHtml(strings.btnDelete || 'Delete')} notice ${escapeHtml(title)}">
+            <span aria-hidden="true">🗑️</span> ${escapeHtml(strings.btnDelete || 'Delete')}
           </button>
         </td>
       </tr>
@@ -894,14 +1012,26 @@ function handleAddNoticeSubmit(e) {
 
   // Validate Required Fields
   let isValid = true;
+  let firstInvalidEl = null;
 
   const validateField = (val, errId) => {
     const err = document.getElementById(errId);
+    const inputId = 'notice' + errId.replace(/^err/, '');
+    const inputEl = document.getElementById(inputId);
+
     if (!val) {
       if (err) err.style.display = 'block';
+      if (inputEl) {
+        inputEl.setAttribute('aria-invalid', 'true');
+        inputEl.setAttribute('aria-describedby', errId);
+        if (!firstInvalidEl) firstInvalidEl = inputEl;
+      }
       isValid = false;
     } else {
       if (err) err.style.display = 'none';
+      if (inputEl) {
+        inputEl.removeAttribute('aria-invalid');
+      }
     }
   };
 
@@ -914,6 +1044,7 @@ function handleAddNoticeSubmit(e) {
   validateField(summaryEn, 'errSummaryEn');
 
   if (!isValid) {
+    if (firstInvalidEl) firstInvalidEl.focus();
     showToast('Please fill out all required fields marked with *', 3500);
     return;
   }
@@ -1053,7 +1184,8 @@ function handleResetDemoData() {
 function showToast(message, duration = 3000) {
   const toast = document.createElement('div');
   toast.className = 'toast';
-  toast.innerHTML = `<span>🔔</span> <span>${escapeHtml(message)}</span>`;
+  toast.setAttribute('role', 'status');
+  toast.innerHTML = `<span aria-hidden="true">🔔</span> <span>${escapeHtml(message)}</span>`;
 
   DOM.toastContainer.appendChild(toast);
 

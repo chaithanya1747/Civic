@@ -28,21 +28,21 @@
   --accent-rose: #f43f5e;
   --accent-purple: #8b5cf6;
 
-  /* Category Specific Accents */
-  --cat-water: #0284c7;
+  /* Category Specific Accents (WCAG AA Compliant >= 4.5:1 against respective -bg) */
+  --cat-water: #0369a1;
   --cat-water-bg: #e0f2fe;
-  --cat-electricity: #b45309;
+  --cat-electricity: #92400e;
   --cat-electricity-bg: #fef3c7;
   --cat-health: #be123c;
   --cat-health-bg: #ffe4e6;
   --cat-traffic: #6d28d9;
   --cat-traffic-bg: #ede9fe;
-  --cat-revenue: #047857;
+  --cat-revenue: #065f46;
   --cat-revenue-bg: #d1fae5;
-  --cat-sanitation: #0e7490;
+  --cat-sanitation: #155e75;
   --cat-sanitation-bg: #cffafe;
 
-  /* Priority Tokens */
+  /* Priority Tokens (High Contrast) */
   --urgent-color: #b91c1c;
   --urgent-bg: #fef2f2;
   --urgent-border: #f87171;
@@ -52,16 +52,16 @@
   --standard-bg: #eff6ff;
   --standard-border: #93c5fd;
 
-  --advisory-color: #b45309;
+  --advisory-color: #92400e;
   --advisory-bg: #fffbeb;
   --advisory-border: #fcd34d;
 
-  /* Status Tokens */
-  --status-active-color: #047857;
+  /* Status Tokens (WCAG AA Compliant) */
+  --status-active-color: #065f46;
   --status-active-bg: #d1fae5;
   --status-upcoming-color: #1d4ed8;
   --status-upcoming-bg: #eff6ff;
-  --status-completed-color: #475569;
+  --status-completed-color: #334155;
   --status-completed-bg: #f1f5f9;
 
   /* Dark Theme & Surface Tokens */
@@ -72,11 +72,11 @@
   
   --border-light: #e2e8f0;
   --border-medium: #cbd5e1;
-  --border-focus: #2563eb;
+  --border-focus: #1d4ed8;
 
   --text-main: #0f172a;
   --text-secondary: #334155;
-  --text-muted: #64748b;
+  --text-muted: #475569;
   --text-inverse: #ffffff;
 
   /* Glassmorphism & Shadows */
@@ -165,6 +165,79 @@ button, input, select, textarea {
   color: inherit;
 }
 
+/* --- Accessibility Utilities (WCAG 2.2 AA) --- */
+
+/* Screen Reader Only Utility (Visually Hidden, Accessible to Assistive Tech) */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Skip to Main Content Link (WCAG 2.4.1 Bypass Blocks) */
+.skip-link {
+  position: absolute;
+  top: -120px;
+  left: 1rem;
+  z-index: 10000;
+  background: #1e3a8a;
+  color: #ffffff !important;
+  padding: 0.85rem 1.4rem;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 0;
+  outline: 3px solid #facc15;
+  outline-offset: 3px;
+}
+
+/* Required Indicator Asterisk */
+.required-indicator {
+  color: var(--urgent-color);
+  font-weight: 700;
+  margin-left: 0.2rem;
+}
+
+/* Telugu Script Readability & Line Height (Prevents vowel matra clipping) */
+html[lang="te"] body {
+  line-height: 1.7;
+}
+
+/* High-Contrast Accessible Keyboard Focus Rings (WCAG 2.2 Criterion 2.4.7 & 2.4.11) */
+:focus-visible {
+  outline: 3px solid #1d4ed8 !important;
+  outline-offset: 2px !important;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.cat-pill:focus-visible,
+.admin-tab-btn:focus-visible,
+.loc-chip:focus-visible,
+.action-checkbox:focus-visible,
+.modal-close-btn:focus-visible,
+.search-clear-btn:focus-visible {
+  outline: 3px solid #1d4ed8 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.25) !important;
+}
+
 /* --- Hackathon Demo Top Bar --- */
 .demo-top-bar {
   background: linear-gradient(90deg, #1e3a8a, #0369a1);
@@ -238,6 +311,7 @@ button, input, select, textarea {
   transform: rotate(-3deg) scale(1.04);
 }
 
+.brand-text .brand-title,
 .brand-text h1 {
   font-family: var(--font-heading);
   font-size: 1.35rem;
@@ -908,17 +982,25 @@ button, input, select, textarea {
 .loc-chip {
   background: #e2e8f0;
   color: var(--text-secondary);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 600;
-  padding: 0.15rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border-radius: var(--radius-sm);
+  border: 1px solid transparent;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   transition: all var(--transition-fast);
+  font-family: inherit;
+  line-height: 1.3;
 }
 
-.loc-chip:hover {
+button.loc-chip:hover,
+button.loc-chip:focus-visible {
   background: var(--primary-100);
   color: var(--primary-800);
+  border-color: var(--primary-500);
 }
 
 /* Interactive Action Checklist in Card */
@@ -954,17 +1036,25 @@ button, input, select, textarea {
   font-size: 0.84rem;
   color: var(--text-secondary);
   line-height: 1.35;
+  min-height: 28px;
 }
 
 .action-checkbox {
-  margin-top: 0.2rem;
+  margin-top: 0.15rem;
   accent-color: var(--primary-600);
   cursor: pointer;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 
+.action-label {
+  cursor: pointer;
+  flex: 1;
+  user-select: none;
+}
+
+.action-item.completed .action-label,
 .action-item.completed span {
   text-decoration: line-through;
   color: var(--text-muted);
@@ -2006,5 +2096,58 @@ button, input, select, textarea {
 
   .footer-links-group {
     gap: 1.5rem;
+  }
+}
+
+/* --- Reduced Motion Preferences (WCAG 2.2 AA Criterion 2.3.3) --- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .pulse-dot,
+  .hero-pill,
+  .toast,
+  .modal-card,
+  .modal-overlay,
+  .brand-logo {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* --- High Zoom (200%) & Reflow Resilience (WCAG 1.4.4 & 1.4.10) --- */
+@media (max-width: 360px) {
+  .hero-search-wrap,
+  .search-input-box {
+    padding: 0.4rem 0.6rem;
+  }
+
+  .stats-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-container {
+    padding: 0.5rem 0.8rem;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-footer-btns {
+    width: 100%;
+    flex-direction: column;
   }
 }
